@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Texto Avanzado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .editor-panel {
+            width: 400px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        h3 {
+            margin: 0 0 10px;
+            text-align: center;
+        }
+
+        input, select, button {
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .editor-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .editor-controls button {
+            cursor: pointer;
+        }
+
+        /* Área de texto */
+        #text-container {
+            margin: 20px auto;
+            width: 90%;
+            height: 300px;
+            border: 2px dashed #ccc;
+            position: relative;
+            background: #fff;
+        }
+
+        .text-item {
+            position: absolute;
+            cursor: move;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Panel de control -->
+    <div class="editor-panel">
+        <h3>Editor de Texto Avanzado</h3>
+        <div>
+            <input type="text" id="input-text" placeholder="Escribe aquí...">
+            <select id="font-family">
+                <option value="Arial" selected>Arial</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+            </select>
+            <input type="color" id="font-color" value="#000000">
+            <label for="font-size">Tamaño:</label>
+            <input type="range" id="font-size" min="10" max="50" value="16">
+        </div>
+
+        <div class="editor-controls">
+            <button onclick="toggleBold()">B</button>
+            <button onclick="toggleItalic()">I</button>
+            <button onclick="toggleUnderline()">U</button>
+            <button onclick="alignText('left')">⏪</button>
+            <button onclick="alignText('center')">🔳</button>
+            <button onclick="alignText('right')">⏩</button>
+            <button onclick="duplicateText()">⧉ Duplicar</button>
+            <button onclick="addText()">➕ Añadir</button>
+        </div>
+    </div>
+
+    <!-- Contenedor de texto -->
+    <div id="text-container"></div>
+
+    <script>
+        let isBold = false, isItalic = false, isUnderline = false;
+        let currentFontSize = 16;
+        let selectedElement = null;
+
+        // Añadir texto
+        function addText() {
+            const input = document.getElementById("input-text").value;
+            const fontFamily = document.getElementById("font-family").value;
+            const fontColor = document.getElementById("font-color").value;
+            currentFontSize = document.getElementById("font-size").value;
+
+            if (!input) return;
+
+            const textElement = document.createElement("div");
+            textElement.className = "text-item";
+            textElement.innerText = input;
+            textElement.style.color = fontColor;
+            textElement.style.fontSize = `${currentFontSize}px`;
+            textElement.style.fontFamily = fontFamily;
+            textElement.style.fontWeight = isBold ? "bold" : "normal";
+            textElement.style.fontStyle = isItalic ? "italic" : "normal";
+            textElement.style.textDecoration = isUnderline ? "underline" : "none";
+            textElement.style.left = "10px";
+            textElement.style.top = "10px";
+
+            // Botón de borrar
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-btn";
+            deleteBtn.innerText = "x";
+            deleteBtn.onclick = () => textElement.remove();
+            textElement.appendChild(deleteBtn);
+
+            // Añadir funcionalidad de arrastrar
+            makeDraggable(textElement);
+
+            // Agregar al contenedor
+            document.getElementById("text-container").appendChild(textElement);
+        }
+
+        // Alternar estilos de texto
+        function toggleBold() { isBold = !isBold; }
+        function toggleItalic() { isItalic = !isItalic; }
+        function toggleUnderline() { isUnderline = !isUnderline; }
+
+        // Alinear texto
+        function alignText(alignment) {
+            if (selectedElement) {
+                selectedElement.style.textAlign = alignment;
+            }
+        }
+
+        // Duplicar texto
+        function duplicateText() {
+            if (selectedElement) {
+                const clone = selectedElement.cloneNode(true);
+                clone.style.top = parseInt(selectedElement.style.top) + 20 + "px";
+                clone.style.left = parseInt(selectedElement.style.left) + 20 + "px";
+                makeDraggable(clone);
+                document.getElementById("text-container").appendChild(clone);
+            }
+        }
+
+        // Hacer texto arrastrable
+        function makeDraggable(element) {
+            let offsetX, offsetY;
+
+            element.onmousedown = function (e) {
+                selectedElement = element;
+                offsetX = e.offsetX;
+                offsetY = e.offsetY;
+
+                document.onmousemove = function (event) {
+                    element.style.left = `${event.pageX - offsetX}px`;
+                    element.style.top = `${event.pageY - offsetY}px`;
+                };
+
+                document.onmouseup = function () {
+                    document.onmousemove = null;
+                    document.onmouseup = null;
+                };
+            };
+        }
+    </script>
+</body>
+</html>
